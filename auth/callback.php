@@ -1,6 +1,5 @@
 <?php
 
-require_once __DIR__ . '/../lib/checkRequestMethod.php';
 require_once __DIR__ . '/../config/init.php';
 require_once __DIR__ . '/../config/google_auth.php';
 
