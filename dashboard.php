@@ -1,31 +1,29 @@
 <?php
-require_once 'vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+require_once __DIR__ . '/config/init.php';
+require_once __DIR__ . '/config/google_auth.php';
 
 
-session_start();
-
-$client = new Google_Client();
-$client->setClientId($_ENV['YOUR_CLIENT_ID']);
-$client->setClientSecret($_ENV['YOUR_CLIENT_SECRET']);
-$client->setRedirectUri($_ENV['YOUR_REDIRECT_URL']);
-$client->addScope("email");
-$client->addScope("profile");
-
-var_dump($_SESSION['access_token']);
+/**
+ * access_tokenがない場合はログインしていないのでindex.phpにリダイレクト
+ * 下記の場合、user情報を取得するためにif elseで分けている 
+ */
 if (isset($_SESSION['access_token'])) {
     $client->setAccessToken($_SESSION['access_token']);
     $service = new Google_Service_Oauth2($client);
     $user = $service->userinfo->get();
-
-    // ユーザ情報を表示
-    echo "<pre>";
-    var_dump($user);
-    echo "</pre>";
+} else {
+    header('Location: index.php');
+    exit;
 }
 ?>
 <p>ただいまログイン中。<?= $user->name; ?>さん、こんにちは！</p>
-<form action="logout.php" method="POST">
+<form action="auth/logout.php" method="POST">
     <button>ログアウト</button>
 </form>
+
+
+<div>
+    <form action="" method="POST">
+        <button>Googleスライドを作成するぞ</button>
+    </form>
+</div>
