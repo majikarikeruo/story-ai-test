@@ -30,18 +30,19 @@ $("#chat-form").on("submit", async function (event) {
   }
 
   const formData = $(this).serialize();
-
-  const response = await fetch("api/gpt.php", {
+  const url = "https://api.openai.com/v1/chat/completions";
+  const response = await fetch(url, {
     method: "POST",
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Type": "application/json",
+      Authorization: "Bearer ここにKEYを入れてね",
     },
-    body:
-      "messageHistory=" + encodeURIComponent(JSON.stringify(messageHistory)),
+    body: JSON.stringify({
+      model: "gpt-3.5-turbo",
+      stream: true,
+      messages: messageHistory,
+    }),
   });
-
-  // const responseData = await response.json();
-  console.log(response);
 
   if (!response.ok) {
     console.error("Error:", await response.text());
