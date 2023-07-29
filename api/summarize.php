@@ -65,84 +65,6 @@ function getSummaryFromOpenAI($text)
 }
 
 
-/**
- * Google Slide APIを叩いて、結果を返す
- * 
- * @param string $text
- * @return string
- */
-function generateGoogleSlide()
-{
-    $service = new Google_Service_Slides($client);
-
-    // 新規のプレゼンテーションを作成
-    $presentation = new Google_Service_Slides_Presentation(array(
-        'title' => 'Your Great Presentation'
-    ));
-
-    // Create a new slide
-    $createdPresentation = $service->presentations->create($presentation);
-    $presentationId = $createdPresentation->presentationId;
-
-    // リクエストを準備（新しいスライドの作成）
-    $requests = array();
-    $requests[] = new Google_Service_Slides_Request(array(
-        'createSlide' => array(
-            'objectId' => 'slideId',
-            'insertionIndex' => '1',
-            'slideLayoutReference' => array(
-                'predefinedLayout' => 'BLANK'
-            )
-        )
-    ));
-
-    // スライド作成リクエストの実行
-    $batchUpdateRequest = new Google_Service_Slides_BatchUpdatePresentationRequest(array(
-        'requests' => $requests
-    ));
-    $response = $service->presentations->batchUpdate($presentationId, $batchUpdateRequest);
-
-    // 作成したスライドのIDを取得
-    $createdSlideId = $response->getReplies()[0]->getCreateSlide()->getObjectId();
-
-
-    // テキストボックスの追加とテキストの設定
-    $requests = array();
-    $requests[] = new Google_Service_Slides_Request(array(
-        'createShape' => array(
-            'objectId' => 'myTextBox_01',
-            'shapeType' => 'TEXT_BOX',
-            'elementProperties' => array(
-                'pageObjectId' => $createdSlideId,
-                'size' => array(
-                    'height' => array('magnitude' => 100, 'unit' => 'PT'),
-                    'width' => array('magnitude' => 600, 'unit' => 'PT'),
-                ),
-                'transform' => array(
-                    'scaleX' => 1,
-                    'scaleY' => 1,
-                    'translateX' => 350,
-                    'translateY' => 100,
-                    'unit' => 'PT'
-                )
-            )
-        )
-    ));
-    // // テキストボックスへのテキストの挿入
-    $requests[] = new Google_Service_Slides_Request(array(
-        'insertText' => array(
-            'objectId' => 'myTextBox_01',
-            'insertionIndex' => 0,
-            'text' => $result
-        )
-    ));
-
-    // // テキストボックス追加リクエストの実行
-    $batchUpdateRequest = new Google_Service_Slides_BatchUpdatePresentationRequest(array(
-        'requests' => $requests
-    ));
-    $response = $service->presentations->batchUpdate($presentationId, $batchUpdateRequest);
-}
 
 
 
@@ -151,11 +73,81 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = getSummaryFromOpenAI($text);
 
     if ($result === FALSE) {
+        // Handle error
         echo json_encode(['error' => 'There was an issue with the request']);
         http_response_code(500);
     } else {
 
-        generateGoogleSlide();
+        $service = new Google_Service_Slides($client);
+
+        // 新規のプレゼンテーションを作成
+        $presentation = new Google_Service_Slides_Presentation(array(
+            'title' => 'Your Great Presentation'
+        ));
+
+        // Create a new slide
+        $createdPresentation = $service->presentations->create($presentation);
+        $presentationId = $createdPresentation->presentationId;
+
+        // リクエストを準備（新しいスライドの作成）
+        $requests = array();
+        $requests[] = new Google_Service_Slides_Request(array(
+            'createSlide' => array(
+                'objectId' => 'slideId',
+                'insertionIndex' => '1',
+                'slideLayoutReference' => array(
+                    'predefinedLayout' => 'BLANK'
+                )
+            )
+        ));
+
+        // スライド作成リクエストの実行
+        $batchUpdateRequest = new Google_Service_Slides_BatchUpdatePresentationRequest(array(
+            'requests' => $requests
+        ));
+        $response = $service->presentations->batchUpdate($presentationId, $batchUpdateRequest);
+
+        // 作成したスライドのIDを取得
+        $createdSlideId = $response->getReplies()[0]->getCreateSlide()->getObjectId();
+
+        // テキストボックスの追加とテキストの設定
+        $requests = array();
+        $requests[] = new Google_Service_Slides_Request(array(
+            'createShape' => array(
+                'objectId' => 'myTextBox_01',
+                'shapeType' => 'TEXT_BOX',
+                'elementProperties' => array(
+                    'pageObjectId' => $createdSlideId,
+                    'size' => array(
+                        'height' => array('magnitude' => 100, 'unit' => 'PT'),
+                        'width' => array('magnitude' => 600, 'unit' => 'PT'),
+                    ),
+                    'transform' => array(
+                        'scaleX' => 1,
+                        'scaleY' => 1,
+                        'translateX' => 350,
+                        'translateY' => 100,
+                        'unit' => 'PT'
+                    )
+                )
+            )
+        ));
+        // // テキストボックスへのテキストの挿入
+        $requests[] = new Google_Service_Slides_Request(array(
+            'insertText' => array(
+                'objectId' => 'myTextBox_01',
+                'insertionIndex' => 0,
+                'text' => $result
+            )
+        ));
+
+        // // テキストボックス追加リクエストの実行
+        $batchUpdateRequest = new Google_Service_Slides_BatchUpdatePresentationRequest(array(
+            'requests' => $requests
+        ));
+        $response = $service->presentations->batchUpdate($presentationId, $batchUpdateRequest);
+
+
         echo 'スライドを作成しました！';
     }
 }

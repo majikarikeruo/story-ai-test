@@ -8,14 +8,21 @@ require_once __DIR__ . '/config/google_auth.php';
  * 下記の場合、user情報を取得するためにif elseで分けている 
  */
 
-if (isset($_SESSION['access_token'])) {
-    $client->setAccessToken($_SESSION['access_token']);
-    $service = new Google_Service_Oauth2($client);
-    $user = $service->userinfo->get();
-} else {
+
+try {
+    if (isset($_SESSION['access_token'])) {
+        $client->setAccessToken($_SESSION['access_token']);
+        $service = new Google_Service_Oauth2($client);
+        $user = $service->userinfo->get();
+    } else {
+        throw new Exception('No access token');
+    }
+} catch (Exception $e) {
+    unset($_SESSION['access_token']);
     header('Location: index.php');
     exit;
 }
+
 
 
 
